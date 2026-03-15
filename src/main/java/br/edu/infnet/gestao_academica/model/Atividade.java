@@ -12,6 +12,7 @@ public class Atividade {
     private LocalDateTime dataPrazo;
     private StatusAtividade status;
     private String arquivoApoio;
+    private Long turmaId;
     private Turma turma;
     private List<Submissao> submissoes = new ArrayList<>();
 
@@ -74,6 +75,14 @@ public class Atividade {
 
     public void setArquivoApoio(String arquivoApoio) {
         this.arquivoApoio = arquivoApoio;
+    }
+
+    public Long getTurmaId() {
+        return turmaId;
+    }
+
+    public void setTurmaId(Long turmaId) {
+        this.turmaId = turmaId;
     }
 
     public Turma getTurma() {

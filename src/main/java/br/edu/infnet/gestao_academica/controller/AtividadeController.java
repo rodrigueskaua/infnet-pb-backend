@@ -1,0 +1,41 @@
+package br.edu.infnet.gestao_academica.controller;
+
+import br.edu.infnet.gestao_academica.dto.AtividadeRequestDTO;
+import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
+import br.edu.infnet.gestao_academica.service.AtividadeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/atividades")
+public class AtividadeController {
+
+    private final AtividadeService service;
+
+    public AtividadeController(AtividadeService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<AtividadeResponseDTO> criar(@RequestBody AtividadeRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AtividadeResponseDTO>> listarTodas() {
+        return ResponseEntity.ok(service.listarTodas());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AtividadeResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    @GetMapping("/turma/{turmaId}")
+    public ResponseEntity<List<AtividadeResponseDTO>> listarPorTurma(@PathVariable Long turmaId) {
+        return ResponseEntity.ok(service.listarPorTurma(turmaId));
+    }
+}

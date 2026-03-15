@@ -9,6 +9,8 @@ public class Submissao {
     private String arquivoResposta;
     private Double nota;
     private String feedback;
+    private Long atividadeId;
+    private Long alunoId;
     private Atividade atividade;
 
     public Submissao() {
@@ -60,6 +62,22 @@ public class Submissao {
 
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+
+    public Long getAtividadeId() {
+        return atividadeId;
+    }
+
+    public void setAtividadeId(Long atividadeId) {
+        this.atividadeId = atividadeId;
+    }
+
+    public Long getAlunoId() {
+        return alunoId;
+    }
+
+    public void setAlunoId(Long alunoId) {
+        this.alunoId = alunoId;
     }
 
     public Atividade getAtividade() {
