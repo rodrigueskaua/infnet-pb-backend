@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class Notificacao {
 
     private Long id;
+    private Long usuarioId;
     private String mensagem;
     private LocalDateTime dataEnvio;
     private Boolean lida;
@@ -26,6 +27,14 @@ public class Notificacao {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public String getMensagem() {

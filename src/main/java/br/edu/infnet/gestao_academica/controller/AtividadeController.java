@@ -47,4 +47,11 @@ public class AtividadeController {
         AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
         return ResponseEntity.ok(service.listarPorTurma(turmaId));
     }
+
+    @GetMapping("/professor/{professorId}")
+    public ResponseEntity<List<AtividadeResponseDTO>> listarPorProfessor(@PathVariable Long professorId,
+                                                                          HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
+        return ResponseEntity.ok(service.listarPorProfessor(professorId));
+    }
 }

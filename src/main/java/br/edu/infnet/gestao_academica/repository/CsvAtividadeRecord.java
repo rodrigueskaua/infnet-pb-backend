@@ -25,6 +25,9 @@ public class CsvAtividadeRecord {
     @CsvBindByName(column = "TURMA_ID")
     private Long turmaId;
 
+    @CsvBindByName(column = "PROFESSOR_ID")
+    private Long professorId;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -45,4 +48,7 @@ public class CsvAtividadeRecord {
 
     public Long getTurmaId() { return turmaId; }
     public void setTurmaId(Long turmaId) { this.turmaId = turmaId; }
+
+    public Long getProfessorId() { return professorId; }
+    public void setProfessorId(Long professorId) { this.professorId = professorId; }
 }

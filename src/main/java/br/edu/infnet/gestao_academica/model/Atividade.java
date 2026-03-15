@@ -13,6 +13,7 @@ public class Atividade {
     private StatusAtividade status;
     private String arquivoApoio;
     private Long turmaId;
+    private Long professorId;
     private Turma turma;
     private List<Submissao> submissoes = new ArrayList<>();
 
@@ -83,6 +84,14 @@ public class Atividade {
 
     public void setTurmaId(Long turmaId) {
         this.turmaId = turmaId;
+    }
+
+    public Long getProfessorId() {
+        return professorId;
+    }
+
+    public void setProfessorId(Long professorId) {
+        this.professorId = professorId;
     }
 
     public Turma getTurma() {

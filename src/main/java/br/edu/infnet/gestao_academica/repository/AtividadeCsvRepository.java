@@ -35,7 +35,7 @@ public class AtividadeCsvRepository {
         }
         if (!Files.exists(csvFilePath)) {
             try (var writer = Files.newBufferedWriter(csvFilePath)) {
-                writer.write("ID,TITULO,DESCRICAO,DATA_PRAZO,STATUS,ARQUIVO_APOIO,TURMA_ID");
+                writer.write("ID,TITULO,DESCRICAO,DATA_PRAZO,STATUS,ARQUIVO_APOIO,TURMA_ID,PROFESSOR_ID");
                 writer.newLine();
             }
         }
@@ -62,6 +62,10 @@ public class AtividadeCsvRepository {
 
     public List<Atividade> findByTurmaId(Long turmaId) {
         return findAll().stream().filter(a -> turmaId.equals(a.getTurmaId())).toList();
+    }
+
+    public List<Atividade> findByProfessorId(Long professorId) {
+        return findAll().stream().filter(a -> professorId.equals(a.getProfessorId())).toList();
     }
 
     public synchronized Atividade save(Atividade atividade) {
@@ -105,6 +109,7 @@ public class AtividadeCsvRepository {
         a.setStatus(record.getStatus() != null ? StatusAtividade.valueOf(record.getStatus()) : StatusAtividade.PUBLICADA);
         a.setArquivoApoio(record.getArquivoApoio());
         a.setTurmaId(record.getTurmaId());
+        a.setProfessorId(record.getProfessorId());
         return a;
     }
 
@@ -117,6 +122,7 @@ public class AtividadeCsvRepository {
         record.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
         record.setArquivoApoio(a.getArquivoApoio());
         record.setTurmaId(a.getTurmaId());
+        record.setProfessorId(a.getProfessorId());
         return record;
     }
 }

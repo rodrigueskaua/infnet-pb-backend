@@ -7,5 +7,6 @@ public record AtividadeResponseDTO(
         String dataPrazo,
         String status,
         String arquivoApoio,
-        Long turmaId
+        Long turmaId,
+        Long professorId
 ) {}

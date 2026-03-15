@@ -27,6 +27,7 @@ public class AtividadeService {
         atividade.setStatus(StatusAtividade.PUBLICADA);
         atividade.setArquivoApoio(dto.arquivoApoio());
         atividade.setTurmaId(dto.turmaId());
+        atividade.setProfessorId(dto.professorId());
 
         Atividade salva = repository.save(atividade);
         return toResponse(salva);
@@ -44,6 +45,10 @@ public class AtividadeService {
 
     public List<AtividadeResponseDTO> listarTodas() {
         return repository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    public List<AtividadeResponseDTO> listarPorProfessor(Long professorId) {
+        return repository.findByProfessorId(professorId).stream().map(this::toResponse).toList();
     }
 
     public Atividade buscarEntidadePorId(Long id) {
@@ -64,7 +69,8 @@ public class AtividadeService {
                 a.getDataPrazo() != null ? a.getDataPrazo().toString() : null,
                 a.getStatus() != null ? a.getStatus().name() : null,
                 a.getArquivoApoio(),
-                a.getTurmaId()
+                a.getTurmaId(),
+                a.getProfessorId()
         );
     }
 }

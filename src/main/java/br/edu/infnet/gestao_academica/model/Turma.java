@@ -9,6 +9,8 @@ public class Turma {
     private String codigo;
     private String nomeDisciplina;
     private String semestre;
+    private Long professorId;
+    private List<Long> alunosIds = new ArrayList<>();
     private Professor professor;
     private List<Aluno> alunosMatriculados = new ArrayList<>();
     private List<Atividade> atividades = new ArrayList<>();
@@ -53,6 +55,22 @@ public class Turma {
 
     public void setSemestre(String semestre) {
         this.semestre = semestre;
+    }
+
+    public Long getProfessorId() {
+        return professorId;
+    }
+
+    public void setProfessorId(Long professorId) {
+        this.professorId = professorId;
+    }
+
+    public List<Long> getAlunosIds() {
+        return alunosIds;
+    }
+
+    public void setAlunosIds(List<Long> alunosIds) {
+        this.alunosIds = alunosIds;
     }
 
     public Professor getProfessor() {

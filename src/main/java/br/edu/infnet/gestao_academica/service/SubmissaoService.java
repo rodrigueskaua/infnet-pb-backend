@@ -36,10 +36,13 @@ public class SubmissaoService {
 
         Submissao salva = repository.save(submissao);
 
-        notificacaoService.notificarProfessor(
-                atividadeId,
-                "Aluno ID " + alunoId + " submeteu resposta para atividade ID " + atividadeId
-        );
+        Long professorId = atividadeService.buscarEntidadePorId(atividadeId).getProfessorId();
+        if (professorId != null) {
+            notificacaoService.notificarUsuario(
+                    professorId,
+                    "Aluno ID " + alunoId + " submeteu resposta para atividade ID " + atividadeId
+            );
+        }
 
         return toResponse(salva);
     }
