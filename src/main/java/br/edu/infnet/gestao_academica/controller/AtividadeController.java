@@ -1,8 +1,10 @@
 package br.edu.infnet.gestao_academica.controller;
 
+import br.edu.infnet.gestao_academica.auth.AutorizacaoHelper;
 import br.edu.infnet.gestao_academica.dto.AtividadeRequestDTO;
 import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
 import br.edu.infnet.gestao_academica.service.AtividadeService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,22 +22,29 @@ public class AtividadeController {
     }
 
     @PostMapping
-    public ResponseEntity<AtividadeResponseDTO> criar(@RequestBody AtividadeRequestDTO dto) {
+    public ResponseEntity<AtividadeResponseDTO> criar(@RequestBody AtividadeRequestDTO dto,
+                                                      HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR");
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<AtividadeResponseDTO>> listarTodas() {
+    public ResponseEntity<List<AtividadeResponseDTO>> listarTodas(HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
         return ResponseEntity.ok(service.listarTodas());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AtividadeResponseDTO> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<AtividadeResponseDTO> buscarPorId(@PathVariable Long id,
+                                                             HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @GetMapping("/turma/{turmaId}")
-    public ResponseEntity<List<AtividadeResponseDTO>> listarPorTurma(@PathVariable Long turmaId) {
+    public ResponseEntity<List<AtividadeResponseDTO>> listarPorTurma(@PathVariable Long turmaId,
+                                                                      HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
         return ResponseEntity.ok(service.listarPorTurma(turmaId));
     }
 }
