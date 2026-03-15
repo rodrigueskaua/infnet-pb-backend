@@ -51,8 +51,13 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(HttpServletRequest request) {
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(
+            @RequestParam(required = false) String papel,
+            HttpServletRequest request) {
         AutorizacaoHelper.exigirPerfil(request, "DIRETOR");
+        if (papel != null && !papel.isBlank()) {
+            return ResponseEntity.ok(service.listarPorPerfil(papel));
+        }
         return ResponseEntity.ok(service.listarTodos());
     }
 

@@ -51,6 +51,12 @@ public class UsuarioService {
                 .toList();
     }
 
+    public List<UsuarioResponseDTO> listarPorPerfil(String papel) {
+        return repository.findByPerfil(papel).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public UsuarioResponseDTO buscarPorId(Long id) {
         Usuario usuario = repository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com id: " + id));

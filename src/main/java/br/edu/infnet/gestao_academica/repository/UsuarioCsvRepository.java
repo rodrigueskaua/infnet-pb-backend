@@ -64,6 +64,12 @@ public class UsuarioCsvRepository {
                 .findFirst();
     }
 
+    public List<Usuario> findByPerfil(String perfil) {
+        return findAll().stream()
+                .filter(u -> u.getPerfil().name().equalsIgnoreCase(perfil))
+                .toList();
+    }
+
     public Optional<Usuario> findByEmail(String email) {
         return findAll().stream()
                 .filter(u -> u.getEmail().equalsIgnoreCase(email))
