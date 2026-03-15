@@ -1,33 +1,23 @@
 package br.edu.infnet.gestao_academica.model;
 
-import com.opencsv.bean.CsvBindByName;
+public abstract class Usuario {
 
-public class Usuario {
-
-    @CsvBindByName
     private Long id;
-
-    @CsvBindByName
     private String nome;
-
-    @CsvBindByName
     private String email;
-
-    @CsvBindByName
     private String senha;
 
-    @CsvBindByName
-    private String papel;
+    private PerfilUsuario perfil;
 
-    public Usuario() {
+    protected Usuario() {
     }
 
-    public Usuario(Long id, String nome, String email, String senha, String papel) {
+    protected Usuario(Long id, String nome, String email, String senha, PerfilUsuario perfil) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
-        this.papel = papel;
+        this.perfil = perfil;
     }
 
     public Long getId() {
@@ -62,11 +52,11 @@ public class Usuario {
         this.senha = senha;
     }
 
-    public String getPapel() {
-        return papel;
+    public PerfilUsuario getPerfil() {
+        return perfil;
     }
 
-    public void setPapel(String papel) {
-        this.papel = papel;
+    public void setPerfil(PerfilUsuario perfil) {
+        this.perfil = perfil;
     }
 }

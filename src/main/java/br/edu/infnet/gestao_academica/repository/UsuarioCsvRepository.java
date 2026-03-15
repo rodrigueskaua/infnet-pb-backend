@@ -1,5 +1,9 @@
 package br.edu.infnet.gestao_academica.repository;
 
+import br.edu.infnet.gestao_academica.model.Aluno;
+import br.edu.infnet.gestao_academica.model.Diretor;
+import br.edu.infnet.gestao_academica.model.PerfilUsuario;
+import br.edu.infnet.gestao_academica.model.Professor;
 import br.edu.infnet.gestao_academica.model.Usuario;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -9,7 +13,6 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ public class UsuarioCsvRepository {
         }
         if (!Files.exists(csvFilePath)) {
             try (var writer = Files.newBufferedWriter(csvFilePath)) {
-                writer.write("ID,NOME,EMAIL,SENHA,PAPEL");
+                writer.write("ID,NOME,EMAIL,SENHA,PERFIL,DEPARTAMENTO,MATRICULA,CARGO");
                 writer.newLine();
             }
         }
@@ -41,11 +44,14 @@ public class UsuarioCsvRepository {
 
     public List<Usuario> findAll() {
         try (var reader = Files.newBufferedReader(csvFilePath)) {
-            return new CsvToBeanBuilder<Usuario>(reader)
-                    .withType(Usuario.class)
+            return new CsvToBeanBuilder<CsvUsuarioRecord>(reader)
+                    .withType(CsvUsuarioRecord.class)
                     .withIgnoreLeadingWhiteSpace(true)
                     .build()
-                    .parse();
+                    .parse()
+                    .stream()
+                    .map(this::toUsuario)
+                    .toList();
         } catch (IOException e) {
             return new ArrayList<>();
         }
@@ -90,11 +96,59 @@ public class UsuarioCsvRepository {
 
     private void writeAll(List<Usuario> usuarios) {
         try (var writer = Files.newBufferedWriter(csvFilePath)) {
-            var beanToCsv = new StatefulBeanToCsvBuilder<Usuario>(writer)
+            var beanToCsv = new StatefulBeanToCsvBuilder<CsvUsuarioRecord>(writer)
                     .build();
-            beanToCsv.write(usuarios);
+            beanToCsv.write(usuarios.stream().map(this::toRecord).toList());
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
             throw new RuntimeException("Erro ao escrever arquivo CSV", e);
         }
+    }
+
+    private Usuario toUsuario(CsvUsuarioRecord record) {
+        PerfilUsuario perfil = parsePerfil(record.getPerfil());
+
+        return switch (perfil) {
+            case ALUNO -> new Aluno(record.getId(), record.getNome(), record.getEmail(), record.getSenha(),
+                    record.getMatricula());
+            case PROFESSOR -> new Professor(record.getId(), record.getNome(), record.getEmail(), record.getSenha(),
+                    record.getDepartamento());
+            case DIRETOR -> new Diretor(record.getId(), record.getNome(), record.getEmail(), record.getSenha(),
+                    record.getCargo());
+        };
+    }
+
+    private CsvUsuarioRecord toRecord(Usuario usuario) {
+        CsvUsuarioRecord record = new CsvUsuarioRecord();
+        record.setId(usuario.getId());
+        record.setNome(usuario.getNome());
+        record.setEmail(usuario.getEmail());
+        record.setSenha(usuario.getSenha());
+        record.setPerfil(usuario.getPerfil().name());
+
+        if (usuario instanceof Professor professor) {
+            record.setDepartamento(professor.getDepartamento());
+        }
+
+        if (usuario instanceof Aluno aluno) {
+            record.setMatricula(aluno.getMatricula());
+        }
+
+        if (usuario instanceof Diretor diretor) {
+            record.setCargo(diretor.getCargo());
+        }
+
+        return record;
+    }
+
+    private PerfilUsuario parsePerfil(String valor) {
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("Perfil de usuário não informado no CSV");
+        }
+
+        if ("ADMIN".equalsIgnoreCase(valor)) {
+            return PerfilUsuario.DIRETOR;
+        }
+
+        return PerfilUsuario.valueOf(valor.toUpperCase());
     }
 }

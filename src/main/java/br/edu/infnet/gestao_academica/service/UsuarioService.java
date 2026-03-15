@@ -5,17 +5,18 @@ import br.edu.infnet.gestao_academica.dto.UsuarioRequestDTO;
 import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.exception.UsuarioJaExisteException;
 import br.edu.infnet.gestao_academica.exception.UsuarioNaoEncontradoException;
+import br.edu.infnet.gestao_academica.model.Aluno;
+import br.edu.infnet.gestao_academica.model.Diretor;
+import br.edu.infnet.gestao_academica.model.PerfilUsuario;
+import br.edu.infnet.gestao_academica.model.Professor;
 import br.edu.infnet.gestao_academica.model.Usuario;
 import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class UsuarioService {
-
-    private static final Set<String> PAPEIS_VALIDOS = Set.of("ALUNO", "PROFESSOR", "ADMIN");
 
     private final UsuarioCsvRepository repository;
 
@@ -28,12 +29,7 @@ public class UsuarioService {
             throw new UsuarioJaExisteException("Já existe um usuário com o email: " + dto.email());
         }
 
-        String papel = dto.papel().toUpperCase();
-        if (!PAPEIS_VALIDOS.contains(papel)) {
-            throw new IllegalArgumentException("Papel inválido: " + dto.papel() + ". Use: ALUNO, PROFESSOR ou ADMIN");
-        }
-
-        Usuario usuario = new Usuario(null, dto.nome(), dto.email(), dto.senha(), papel);
+        Usuario usuario = criarUsuario(dto);
         Usuario salvo = repository.save(usuario);
         return toResponse(salvo);
     }
@@ -68,7 +64,33 @@ public class UsuarioService {
         repository.deleteById(id);
     }
 
+    private Usuario criarUsuario(UsuarioRequestDTO dto) {
+        PerfilUsuario perfil = parsePerfil(dto.papel());
+
+        return switch (perfil) {
+            case ALUNO -> new Aluno(null, dto.nome(), dto.email(), dto.senha(), null);
+            case PROFESSOR -> new Professor(null, dto.nome(), dto.email(), dto.senha(), null);
+            case DIRETOR -> new Diretor(null, dto.nome(), dto.email(), dto.senha(), null);
+        };
+    }
+
+    private PerfilUsuario parsePerfil(String valor) {
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("Papel inválido. Use: ALUNO, PROFESSOR ou DIRETOR");
+        }
+
+        if ("ADMIN".equalsIgnoreCase(valor)) {
+            return PerfilUsuario.DIRETOR;
+        }
+
+        try {
+            return PerfilUsuario.valueOf(valor.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Papel inválido: " + valor + ". Use: ALUNO, PROFESSOR ou DIRETOR");
+        }
+    }
+
     private UsuarioResponseDTO toResponse(Usuario usuario) {
-        return new UsuarioResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getPapel());
+        return new UsuarioResponseDTO(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getPerfil().name());
     }
 }
