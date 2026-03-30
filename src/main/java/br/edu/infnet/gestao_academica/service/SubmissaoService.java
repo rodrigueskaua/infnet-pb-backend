@@ -72,8 +72,34 @@ public class SubmissaoService {
                 .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada: " + id));
         s.setNota(nota);
         s.setFeedback(feedback);
-        return toResponse(repository.save(s));
+
+        Submissao salva = repository.save(s);
+        notificarAlunoCorrecao(salva, nota, feedback);
+        return toResponse(salva);
     }
+
+        private void notificarAlunoCorrecao(Submissao submissao, Double nota, String feedback) {
+        if (submissao.getAlunoId() == null) {
+            return;
+        }
+
+        var atividade = submissao.getAtividadeId() != null
+            ? atividadeService.buscarEntidadePorId(submissao.getAtividadeId())
+            : null;
+
+        String tituloAtividade = atividade != null ? atividade.getTitulo() : "atividade";
+        String nomeProfessor = (atividade != null && atividade.getProfessorId() != null)
+            ? usuarioRepository.findById(atividade.getProfessorId()).map(u -> u.getNome()).orElse("Professor")
+            : "Professor";
+
+        String detalheNota = nota != null ? " Nota: " + nota + "." : "";
+        String detalheFeedback = (feedback != null && !feedback.isBlank()) ? " Feedback: " + feedback : "";
+
+        String mensagem = "Sua submissão da atividade \"" + tituloAtividade
+            + "\" foi corrigida por " + nomeProfessor + "." + detalheNota + detalheFeedback;
+
+        notificacaoService.notificarUsuario(submissao.getAlunoId(), mensagem);
+        }
 
     private SubmissaoResponseDTO toResponse(Submissao s) {
         String tituloAtividade = s.getAtividadeId() != null

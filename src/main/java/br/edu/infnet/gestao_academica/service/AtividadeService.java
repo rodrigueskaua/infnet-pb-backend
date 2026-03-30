@@ -18,13 +18,16 @@ public class AtividadeService {
     private final AtividadeCsvRepository repository;
     private final UsuarioCsvRepository usuarioRepository;
     private final TurmaCsvRepository turmaRepository;
+    private final NotificacaoService notificacaoService;
 
     public AtividadeService(AtividadeCsvRepository repository,
                             UsuarioCsvRepository usuarioRepository,
-                            TurmaCsvRepository turmaRepository) {
+                            TurmaCsvRepository turmaRepository,
+                            NotificacaoService notificacaoService) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.turmaRepository = turmaRepository;
+        this.notificacaoService = notificacaoService;
     }
 
     public AtividadeResponseDTO criar(AtividadeRequestDTO dto, Long professorId) {
@@ -37,7 +40,9 @@ public class AtividadeService {
         atividade.setTurmaId(dto.turmaId());
         atividade.setProfessorId(professorId);
 
-        return toResponse(repository.save(atividade));
+        Atividade salva = repository.save(atividade);
+        notificarAlunosDaTurma(salva);
+        return toResponse(salva);
     }
 
     public AtividadeResponseDTO buscarPorId(Long id) {
@@ -65,6 +70,28 @@ public class AtividadeService {
     public boolean isPrazoValido(Long atividadeId) {
         Atividade atividade = buscarEntidadePorId(atividadeId);
         return atividade.getDataPrazo() == null || LocalDateTime.now().isBefore(atividade.getDataPrazo());
+    }
+
+    private void notificarAlunosDaTurma(Atividade atividade) {
+        if (atividade.getTurmaId() == null) {
+            return;
+        }
+
+        turmaRepository.findById(atividade.getTurmaId()).ifPresent(turma -> {
+            if (turma.getAlunosIds() == null || turma.getAlunosIds().isEmpty()) {
+                return;
+            }
+
+            String nomeProfessor = atividade.getProfessorId() != null
+                    ? usuarioRepository.findById(atividade.getProfessorId()).map(u -> u.getNome()).orElse("Professor")
+                    : "Professor";
+
+            String disciplina = turma.getNomeDisciplina() != null ? turma.getNomeDisciplina() : "sua turma";
+            String mensagem = "Nova atividade publicada em \"" + disciplina + "\": \""
+                    + atividade.getTitulo() + "\" (professor: " + nomeProfessor + ")";
+
+            turma.getAlunosIds().forEach(alunoId -> notificacaoService.notificarUsuario(alunoId, mensagem));
+        });
     }
 
     private AtividadeResponseDTO toResponse(Atividade a) {
