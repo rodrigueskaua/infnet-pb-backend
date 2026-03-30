@@ -10,5 +10,7 @@ public record AtividadeResponseDTO(
         Long turmaId,
         String nomeDisciplina,
         Long professorId,
-        String nomeProfessor
+        String nomeProfessor,
+        Integer quantosEntregaram,
+        Integer quantosPendentes
 ) {}

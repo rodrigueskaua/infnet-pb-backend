@@ -5,12 +5,15 @@ import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
 import br.edu.infnet.gestao_academica.model.Atividade;
 import br.edu.infnet.gestao_academica.model.StatusAtividade;
 import br.edu.infnet.gestao_academica.repository.AtividadeCsvRepository;
+import br.edu.infnet.gestao_academica.repository.SubmissaoCsvRepository;
 import br.edu.infnet.gestao_academica.repository.TurmaCsvRepository;
 import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AtividadeService {
@@ -18,15 +21,18 @@ public class AtividadeService {
     private final AtividadeCsvRepository repository;
     private final UsuarioCsvRepository usuarioRepository;
     private final TurmaCsvRepository turmaRepository;
+    private final SubmissaoCsvRepository submissaoRepository;
     private final NotificacaoService notificacaoService;
 
     public AtividadeService(AtividadeCsvRepository repository,
                             UsuarioCsvRepository usuarioRepository,
                             TurmaCsvRepository turmaRepository,
+                            SubmissaoCsvRepository submissaoRepository,
                             NotificacaoService notificacaoService) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.turmaRepository = turmaRepository;
+        this.submissaoRepository = submissaoRepository;
         this.notificacaoService = notificacaoService;
     }
 
@@ -99,9 +105,23 @@ public class AtividadeService {
                 ? usuarioRepository.findById(a.getProfessorId()).map(u -> u.getNome()).orElse(null)
                 : null;
 
-        String nomeDisciplina = a.getTurmaId() != null
-                ? turmaRepository.findById(a.getTurmaId()).map(t -> t.getNomeDisciplina()).orElse(null)
-                : null;
+        var turma = a.getTurmaId() != null
+            ? turmaRepository.findById(a.getTurmaId()).orElse(null)
+            : null;
+
+        String nomeDisciplina = turma != null ? turma.getNomeDisciplina() : null;
+
+        Set<Long> alunosMatriculados = turma != null && turma.getAlunosIds() != null
+            ? new HashSet<>(turma.getAlunosIds())
+            : Set.of();
+
+        int quantosEntregaram = (int) submissaoRepository.findByAtividadeId(a.getId()).stream()
+            .map(s -> s.getAlunoId())
+            .filter(alunosMatriculados::contains)
+            .distinct()
+            .count();
+
+        int quantosPendentes = Math.max(alunosMatriculados.size() - quantosEntregaram, 0);
 
         return new AtividadeResponseDTO(
                 a.getId(),
@@ -113,7 +133,9 @@ public class AtividadeService {
                 a.getTurmaId(),
                 nomeDisciplina,
                 a.getProfessorId(),
-                nomeProfessor
+                nomeProfessor,
+                quantosEntregaram,
+                quantosPendentes
         );
     }
 }
