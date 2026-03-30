@@ -1,16 +1,41 @@
 package br.edu.infnet.gestao_academica.exception;
 
+import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatus(ResponseStatusException ex,
+                                                                     HttpServletRequest request) {
+        HttpStatusCode statusCode = ex.getStatusCode();
+        String reason = ex.getReason() != null ? ex.getReason() : "Erro na requisição.";
+
+        if (statusCode.value() == HttpStatus.FORBIDDEN.value()) {
+            Object usuarioLogado = request.getAttribute("usuarioLogado");
+            String perfilAtual = usuarioLogado instanceof UsuarioResponseDTO usuario
+                    ? usuario.perfil()
+                    : "DESCONHECIDO";
+
+            String mensagem = reason + " Perfil atual: " + perfilAtual + ".";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("erro", mensagem));
+        }
+
+        return ResponseEntity.status(statusCode)
+                .body(Map.of("erro", reason));
+    }
 
     @ExceptionHandler(UsuarioJaExisteException.class)
     public ResponseEntity<Map<String, String>> handleUsuarioJaExiste(UsuarioJaExisteException ex) {
