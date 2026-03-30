@@ -8,5 +8,7 @@ public record AtividadeResponseDTO(
         String status,
         String arquivoApoio,
         Long turmaId,
-        Long professorId
+        String nomeDisciplina,
+        Long professorId,
+        String nomeProfessor
 ) {}

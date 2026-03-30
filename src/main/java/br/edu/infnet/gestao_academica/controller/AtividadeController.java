@@ -3,6 +3,7 @@ package br.edu.infnet.gestao_academica.controller;
 import br.edu.infnet.gestao_academica.auth.AutorizacaoHelper;
 import br.edu.infnet.gestao_academica.dto.AtividadeRequestDTO;
 import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
+import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.service.AtividadeService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,8 @@ public class AtividadeController {
     @PostMapping
     public ResponseEntity<AtividadeResponseDTO> criar(@RequestBody AtividadeRequestDTO dto,
                                                       HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR");
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto, logado.id()));
     }
 
     @GetMapping

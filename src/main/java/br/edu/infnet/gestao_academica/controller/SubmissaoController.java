@@ -1,7 +1,9 @@
 package br.edu.infnet.gestao_academica.controller;
 
 import br.edu.infnet.gestao_academica.auth.AutorizacaoHelper;
+import br.edu.infnet.gestao_academica.dto.CorrecaoRequestDTO;
 import br.edu.infnet.gestao_academica.dto.SubmissaoResponseDTO;
+import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.service.StorageService;
 import br.edu.infnet.gestao_academica.service.SubmissaoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,20 +30,24 @@ public class SubmissaoController {
     @PostMapping
     public ResponseEntity<SubmissaoResponseDTO> submeter(
             @RequestParam Long atividadeId,
-            @RequestParam Long alunoId,
             @RequestParam MultipartFile arquivo,
             HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "ALUNO");
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "ALUNO");
         String caminho = storageService.salvar(arquivo);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(submissaoService.submeter(atividadeId, alunoId, caminho));
+                .body(submissaoService.submeter(atividadeId, logado.id(), caminho));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SubmissaoResponseDTO> buscarPorId(@PathVariable Long id,
                                                              HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "ALUNO", "PROFESSOR", "DIRETOR");
-        return ResponseEntity.ok(submissaoService.buscarPorId(id));
+        UsuarioResponseDTO logado = AutorizacaoHelper.getUsuarioLogado(request);
+        SubmissaoResponseDTO submissao = submissaoService.buscarPorId(id);
+
+        if ("ALUNO".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(submissao.alunoId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
+        return ResponseEntity.ok(submissao);
     }
 
     @GetMapping("/atividade/{atividadeId}")
@@ -53,7 +60,18 @@ public class SubmissaoController {
     @GetMapping("/aluno/{alunoId}")
     public ResponseEntity<List<SubmissaoResponseDTO>> listarPorAluno(@PathVariable Long alunoId,
                                                                       HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "ALUNO", "PROFESSOR", "DIRETOR");
+        UsuarioResponseDTO logado = AutorizacaoHelper.getUsuarioLogado(request);
+        if ("ALUNO".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(alunoId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
         return ResponseEntity.ok(submissaoService.listarPorAluno(alunoId));
+    }
+
+    @PatchMapping("/{id}/corrigir")
+    public ResponseEntity<SubmissaoResponseDTO> corrigir(@PathVariable Long id,
+                                                          @RequestBody CorrecaoRequestDTO dto,
+                                                          HttpServletRequest request) {
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
+        return ResponseEntity.ok(submissaoService.corrigir(id, dto.nota(), dto.feedback()));
     }
 }

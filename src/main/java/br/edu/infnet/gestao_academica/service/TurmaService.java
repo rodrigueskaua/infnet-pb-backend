@@ -4,6 +4,7 @@ import br.edu.infnet.gestao_academica.dto.TurmaRequestDTO;
 import br.edu.infnet.gestao_academica.dto.TurmaResponseDTO;
 import br.edu.infnet.gestao_academica.model.Turma;
 import br.edu.infnet.gestao_academica.repository.TurmaCsvRepository;
+import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
 public class TurmaService {
 
     private final TurmaCsvRepository repository;
+    private final UsuarioCsvRepository usuarioRepository;
 
-    public TurmaService(TurmaCsvRepository repository) {
+    public TurmaService(TurmaCsvRepository repository, UsuarioCsvRepository usuarioRepository) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public TurmaResponseDTO criar(TurmaRequestDTO dto) {
@@ -60,12 +63,17 @@ public class TurmaService {
     }
 
     private TurmaResponseDTO toResponse(Turma t) {
+        String nomeProfessor = t.getProfessorId() != null
+                ? usuarioRepository.findById(t.getProfessorId()).map(u -> u.getNome()).orElse(null)
+                : null;
+
         return new TurmaResponseDTO(
                 t.getId(),
                 t.getCodigo(),
                 t.getNomeDisciplina(),
                 t.getSemestre(),
                 t.getProfessorId(),
+                nomeProfessor,
                 t.getAlunosIds()
         );
     }

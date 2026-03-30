@@ -3,11 +3,13 @@ package br.edu.infnet.gestao_academica.controller;
 import br.edu.infnet.gestao_academica.auth.AutorizacaoHelper;
 import br.edu.infnet.gestao_academica.dto.TurmaRequestDTO;
 import br.edu.infnet.gestao_academica.dto.TurmaResponseDTO;
+import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.service.TurmaService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -44,14 +46,20 @@ public class TurmaController {
     @GetMapping("/professor/{professorId}")
     public ResponseEntity<List<TurmaResponseDTO>> listarPorProfessor(@PathVariable Long professorId,
                                                                        HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR");
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR");
+        if ("PROFESSOR".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(professorId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
         return ResponseEntity.ok(service.listarPorProfessor(professorId));
     }
 
     @GetMapping("/aluno/{alunoId}")
     public ResponseEntity<List<TurmaResponseDTO>> listarPorAluno(@PathVariable Long alunoId,
                                                                    HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR", "ALUNO");
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR", "ALUNO");
+        if ("ALUNO".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(alunoId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
         return ResponseEntity.ok(service.listarPorAluno(alunoId));
     }
 

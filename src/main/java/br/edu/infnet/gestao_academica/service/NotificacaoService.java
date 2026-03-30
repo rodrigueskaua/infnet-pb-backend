@@ -30,6 +30,12 @@ public class NotificacaoService {
         return repository.findByUsuarioId(usuarioId).stream().map(this::toResponse).toList();
     }
 
+    public NotificacaoResponseDTO buscarPorId(Long id) {
+        Notificacao n = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada: " + id));
+        return toResponse(n);
+    }
+
     public NotificacaoResponseDTO marcarComoLida(Long id) {
         Notificacao n = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada: " + id));

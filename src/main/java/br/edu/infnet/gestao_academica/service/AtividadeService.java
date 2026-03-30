@@ -5,6 +5,8 @@ import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
 import br.edu.infnet.gestao_academica.model.Atividade;
 import br.edu.infnet.gestao_academica.model.StatusAtividade;
 import br.edu.infnet.gestao_academica.repository.AtividadeCsvRepository;
+import br.edu.infnet.gestao_academica.repository.TurmaCsvRepository;
+import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,12 +16,18 @@ import java.util.List;
 public class AtividadeService {
 
     private final AtividadeCsvRepository repository;
+    private final UsuarioCsvRepository usuarioRepository;
+    private final TurmaCsvRepository turmaRepository;
 
-    public AtividadeService(AtividadeCsvRepository repository) {
+    public AtividadeService(AtividadeCsvRepository repository,
+                            UsuarioCsvRepository usuarioRepository,
+                            TurmaCsvRepository turmaRepository) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
+        this.turmaRepository = turmaRepository;
     }
 
-    public AtividadeResponseDTO criar(AtividadeRequestDTO dto) {
+    public AtividadeResponseDTO criar(AtividadeRequestDTO dto, Long professorId) {
         Atividade atividade = new Atividade();
         atividade.setTitulo(dto.titulo());
         atividade.setDescricao(dto.descricao());
@@ -27,16 +35,14 @@ public class AtividadeService {
         atividade.setStatus(StatusAtividade.PUBLICADA);
         atividade.setArquivoApoio(dto.arquivoApoio());
         atividade.setTurmaId(dto.turmaId());
-        atividade.setProfessorId(dto.professorId());
+        atividade.setProfessorId(professorId);
 
-        Atividade salva = repository.save(atividade);
-        return toResponse(salva);
+        return toResponse(repository.save(atividade));
     }
 
     public AtividadeResponseDTO buscarPorId(Long id) {
-        Atividade atividade = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada: " + id));
-        return toResponse(atividade);
+        return toResponse(repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada: " + id)));
     }
 
     public List<AtividadeResponseDTO> listarPorTurma(Long turmaId) {
@@ -62,6 +68,14 @@ public class AtividadeService {
     }
 
     private AtividadeResponseDTO toResponse(Atividade a) {
+        String nomeProfessor = a.getProfessorId() != null
+                ? usuarioRepository.findById(a.getProfessorId()).map(u -> u.getNome()).orElse(null)
+                : null;
+
+        String nomeDisciplina = a.getTurmaId() != null
+                ? turmaRepository.findById(a.getTurmaId()).map(t -> t.getNomeDisciplina()).orElse(null)
+                : null;
+
         return new AtividadeResponseDTO(
                 a.getId(),
                 a.getTitulo(),
@@ -70,7 +84,9 @@ public class AtividadeService {
                 a.getStatus() != null ? a.getStatus().name() : null,
                 a.getArquivoApoio(),
                 a.getTurmaId(),
-                a.getProfessorId()
+                nomeDisciplina,
+                a.getProfessorId(),
+                nomeProfessor
         );
     }
 }

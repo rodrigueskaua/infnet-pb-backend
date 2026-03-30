@@ -3,6 +3,7 @@ package br.edu.infnet.gestao_academica.service;
 import br.edu.infnet.gestao_academica.dto.SubmissaoResponseDTO;
 import br.edu.infnet.gestao_academica.model.Submissao;
 import br.edu.infnet.gestao_academica.repository.SubmissaoCsvRepository;
+import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,13 +15,16 @@ public class SubmissaoService {
     private final SubmissaoCsvRepository repository;
     private final AtividadeService atividadeService;
     private final NotificacaoService notificacaoService;
+    private final UsuarioCsvRepository usuarioRepository;
 
     public SubmissaoService(SubmissaoCsvRepository repository,
                             AtividadeService atividadeService,
-                            NotificacaoService notificacaoService) {
+                            NotificacaoService notificacaoService,
+                            UsuarioCsvRepository usuarioRepository) {
         this.repository = repository;
         this.atividadeService = atividadeService;
         this.notificacaoService = notificacaoService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public SubmissaoResponseDTO submeter(Long atividadeId, Long alunoId, String caminhoArquivo) {
@@ -36,11 +40,13 @@ public class SubmissaoService {
 
         Submissao salva = repository.save(submissao);
 
-        Long professorId = atividadeService.buscarEntidadePorId(atividadeId).getProfessorId();
-        if (professorId != null) {
+        var atividade = atividadeService.buscarEntidadePorId(atividadeId);
+        String nomeAluno = usuarioRepository.findById(alunoId).map(u -> u.getNome()).orElse("Aluno");
+
+        if (atividade.getProfessorId() != null) {
             notificacaoService.notificarUsuario(
-                    professorId,
-                    "Aluno ID " + alunoId + " submeteu resposta para atividade ID " + atividadeId
+                    atividade.getProfessorId(),
+                    nomeAluno + " submeteu resposta para \"" + atividade.getTitulo() + "\""
             );
         }
 
@@ -61,11 +67,29 @@ public class SubmissaoService {
         return toResponse(s);
     }
 
+    public SubmissaoResponseDTO corrigir(Long id, Double nota, String feedback) {
+        Submissao s = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada: " + id));
+        s.setNota(nota);
+        s.setFeedback(feedback);
+        return toResponse(repository.save(s));
+    }
+
     private SubmissaoResponseDTO toResponse(Submissao s) {
+        String tituloAtividade = s.getAtividadeId() != null
+                ? atividadeService.buscarEntidadePorId(s.getAtividadeId()).getTitulo()
+                : null;
+
+        String nomeAluno = s.getAlunoId() != null
+                ? usuarioRepository.findById(s.getAlunoId()).map(u -> u.getNome()).orElse(null)
+                : null;
+
         return new SubmissaoResponseDTO(
                 s.getId(),
                 s.getAtividadeId(),
+                tituloAtividade,
                 s.getAlunoId(),
+                nomeAluno,
                 s.getArquivoResposta(),
                 s.getDataEntrega() != null ? s.getDataEntrega().toString() : null,
                 s.getNota(),

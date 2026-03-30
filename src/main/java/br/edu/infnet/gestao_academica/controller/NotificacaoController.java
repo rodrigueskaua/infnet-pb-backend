@@ -5,8 +5,10 @@ import br.edu.infnet.gestao_academica.dto.NotificacaoResponseDTO;
 import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.service.NotificacaoService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -36,7 +38,11 @@ public class NotificacaoController {
     @PatchMapping("/{id}/lida")
     public ResponseEntity<NotificacaoResponseDTO> marcarComoLida(@PathVariable Long id,
                                                                    HttpServletRequest request) {
-        AutorizacaoHelper.getUsuarioLogado(request);
+        UsuarioResponseDTO logado = AutorizacaoHelper.getUsuarioLogado(request);
+        NotificacaoResponseDTO notificacao = service.buscarPorId(id);
+        if (!logado.id().equals(notificacao.usuarioId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
+        }
         return ResponseEntity.ok(service.marcarComoLida(id));
     }
 }

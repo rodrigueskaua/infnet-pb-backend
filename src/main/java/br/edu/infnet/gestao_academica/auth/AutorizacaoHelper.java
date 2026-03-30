@@ -17,10 +17,10 @@ public class AutorizacaoHelper {
         return usuario;
     }
 
-    public static void exigirPerfil(HttpServletRequest request, String... perfisPermitidos) {
+    public static UsuarioResponseDTO exigirPerfil(HttpServletRequest request, String... perfisPermitidos) {
         UsuarioResponseDTO usuario = getUsuarioLogado(request);
         for (String perfil : perfisPermitidos) {
-            if (perfil.equalsIgnoreCase(usuario.papel())) return;
+            if (perfil.equalsIgnoreCase(usuario.perfil())) return usuario;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                 "Acesso negado. Perfil necessário: " + String.join(" ou ", perfisPermitidos));

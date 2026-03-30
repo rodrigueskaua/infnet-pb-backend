@@ -3,6 +3,7 @@ package br.edu.infnet.gestao_academica.service;
 import br.edu.infnet.gestao_academica.dto.LoginRequestDTO;
 import br.edu.infnet.gestao_academica.dto.UsuarioRequestDTO;
 import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
+import br.edu.infnet.gestao_academica.exception.CredenciaisInvalidasException;
 import br.edu.infnet.gestao_academica.exception.UsuarioJaExisteException;
 import br.edu.infnet.gestao_academica.exception.UsuarioNaoEncontradoException;
 import br.edu.infnet.gestao_academica.model.Aluno;
@@ -11,6 +12,7 @@ import br.edu.infnet.gestao_academica.model.PerfilUsuario;
 import br.edu.infnet.gestao_academica.model.Professor;
 import br.edu.infnet.gestao_academica.model.Usuario;
 import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,9 +21,11 @@ import java.util.List;
 public class UsuarioService {
 
     private final UsuarioCsvRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioCsvRepository repository) {
+    public UsuarioService(UsuarioCsvRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
@@ -29,17 +33,23 @@ public class UsuarioService {
             throw new UsuarioJaExisteException("Já existe um usuário com o email: " + dto.email());
         }
 
-        Usuario usuario = criarUsuario(dto);
+        PerfilUsuario perfil = parsePerfil(dto.perfil());
+        if (perfil == PerfilUsuario.DIRETOR) {
+            throw new IllegalArgumentException("Papel inválido. Use: ALUNO ou PROFESSOR");
+        }
+
+        String senhaHash = passwordEncoder.encode(dto.senha());
+        Usuario usuario = criarUsuario(dto, senhaHash, perfil);
         Usuario salvo = repository.save(usuario);
         return toResponse(salvo);
     }
 
     public UsuarioResponseDTO login(LoginRequestDTO dto) {
         Usuario usuario = repository.findByEmail(dto.email())
-                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com email: " + dto.email()));
+                .orElseThrow(() -> new CredenciaisInvalidasException("Credenciais inválidas"));
 
-        if (!usuario.getSenha().equals(dto.senha())) {
-            throw new UsuarioNaoEncontradoException("Credenciais inválidas");
+        if (!passwordEncoder.matches(dto.senha(), usuario.getSenha())) {
+            throw new CredenciaisInvalidasException("Credenciais inválidas");
         }
 
         return toResponse(usuario);
@@ -70,29 +80,27 @@ public class UsuarioService {
         repository.deleteById(id);
     }
 
-    private Usuario criarUsuario(UsuarioRequestDTO dto) {
-        PerfilUsuario perfil = parsePerfil(dto.papel());
-
+    private Usuario criarUsuario(UsuarioRequestDTO dto, String senhaHash, PerfilUsuario perfil) {
         return switch (perfil) {
-            case ALUNO -> new Aluno(null, dto.nome(), dto.email(), dto.senha(), null);
-            case PROFESSOR -> new Professor(null, dto.nome(), dto.email(), dto.senha(), null);
-            case DIRETOR -> new Diretor(null, dto.nome(), dto.email(), dto.senha(), null);
+            case ALUNO -> new Aluno(null, dto.nome(), dto.email(), senhaHash, null);
+            case PROFESSOR -> new Professor(null, dto.nome(), dto.email(), senhaHash, null);
+            case DIRETOR -> new Diretor(null, dto.nome(), dto.email(), senhaHash, null);
         };
     }
 
     private PerfilUsuario parsePerfil(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new IllegalArgumentException("Papel inválido. Use: ALUNO, PROFESSOR ou DIRETOR");
+            throw new IllegalArgumentException("Papel inválido. Use: ALUNO ou PROFESSOR");
         }
 
         if ("ADMIN".equalsIgnoreCase(valor)) {
-            return PerfilUsuario.DIRETOR;
+            throw new IllegalArgumentException("Papel inválido. Use: ALUNO ou PROFESSOR");
         }
 
         try {
             return PerfilUsuario.valueOf(valor.toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Papel inválido: " + valor + ". Use: ALUNO, PROFESSOR ou DIRETOR");
+            throw new IllegalArgumentException("Papel inválido: " + valor + ". Use: ALUNO ou PROFESSOR");
         }
     }
 

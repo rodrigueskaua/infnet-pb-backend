@@ -35,7 +35,7 @@ public class UsuarioController {
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
         UsuarioResponseDTO usuario = service.login(dto);
         String token = sessaoStore.criarSessao(usuario);
-        return ResponseEntity.ok(new LoginResponseDTO(token, usuario.id(), usuario.nome(), usuario.email(), usuario.papel()));
+        return ResponseEntity.ok(new LoginResponseDTO(token, usuario.id(), usuario.nome(), usuario.email(), usuario.perfil()));
     }
 
     @PostMapping("/logout")
@@ -52,11 +52,11 @@ public class UsuarioController {
 
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(
-            @RequestParam(required = false) String papel,
+            @RequestParam(required = false) String perfil,
             HttpServletRequest request) {
         AutorizacaoHelper.exigirPerfil(request, "DIRETOR");
-        if (papel != null && !papel.isBlank()) {
-            return ResponseEntity.ok(service.listarPorPerfil(papel));
+        if (perfil != null && !perfil.isBlank()) {
+            return ResponseEntity.ok(service.listarPorPerfil(perfil));
         }
         return ResponseEntity.ok(service.listarTodos());
     }
