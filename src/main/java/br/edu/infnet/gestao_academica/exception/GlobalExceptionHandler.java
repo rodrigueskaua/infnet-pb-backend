@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 import java.util.Map;
 
@@ -38,5 +40,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("erro", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("erro", "Arquivo excede o limite permitido de 20MB."));
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, String>> handleMultipartException(MultipartException ex) {
+        String mensagem = ex.getMessage() != null ? ex.getMessage() : "";
+        if (mensagem.contains("FileSizeLimitExceededException")
+                || mensagem.contains("size")
+                || mensagem.contains("exceeds its maximum permitted size")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("erro", "Arquivo excede o limite permitido de 20MB."));
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("erro", "Erro ao processar upload do arquivo."));
     }
 }
