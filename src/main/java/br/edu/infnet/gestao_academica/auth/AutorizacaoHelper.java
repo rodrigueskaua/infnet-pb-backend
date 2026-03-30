@@ -23,6 +23,7 @@ public class AutorizacaoHelper {
             if (perfil.equalsIgnoreCase(usuario.perfil())) return usuario;
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                "Acesso negado. Perfil necessário: " + String.join(" ou ", perfisPermitidos));
+                "Acesso negado para perfil " + usuario.perfil()
+                        + ". Perfil necessário: " + String.join(" ou ", perfisPermitidos));
     }
 }

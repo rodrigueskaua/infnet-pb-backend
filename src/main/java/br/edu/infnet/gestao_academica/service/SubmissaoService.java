@@ -32,6 +32,8 @@ public class SubmissaoService {
             throw new IllegalStateException("Prazo da atividade encerrado.");
         }
 
+        validarReenvioComSubmissaoJaCorrigida(atividadeId, alunoId);
+
         Submissao submissao = new Submissao();
         submissao.setAtividadeId(atividadeId);
         submissao.setAlunoId(alunoId);
@@ -51,6 +53,16 @@ public class SubmissaoService {
         }
 
         return toResponse(salva);
+    }
+
+    private void validarReenvioComSubmissaoJaCorrigida(Long atividadeId, Long alunoId) {
+        boolean possuiSubmissaoCorrigida = repository.findByAtividadeId(atividadeId).stream()
+                .filter(s -> alunoId.equals(s.getAlunoId()))
+                .anyMatch(s -> s.getNota() != null || (s.getFeedback() != null && !s.getFeedback().isBlank()));
+
+        if (possuiSubmissaoCorrigida) {
+            throw new IllegalStateException("Submissão já corrigida. Não é permitido reenviar esta atividade.");
+        }
     }
 
     public List<SubmissaoResponseDTO> listarPorAtividade(Long atividadeId) {
