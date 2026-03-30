@@ -1,5 +1,6 @@
 package br.edu.infnet.gestao_academica.service;
 
+import br.edu.infnet.gestao_academica.dto.AlunoResumoDTO;
 import br.edu.infnet.gestao_academica.dto.TurmaRequestDTO;
 import br.edu.infnet.gestao_academica.dto.TurmaResponseDTO;
 import br.edu.infnet.gestao_academica.model.Turma;
@@ -67,6 +68,15 @@ public class TurmaService {
                 ? usuarioRepository.findById(t.getProfessorId()).map(u -> u.getNome()).orElse(null)
                 : null;
 
+        List<AlunoResumoDTO> alunos = t.getAlunosIds() == null
+            ? List.of()
+            : t.getAlunosIds().stream()
+            .map(alunoId -> new AlunoResumoDTO(
+                alunoId,
+                usuarioRepository.findById(alunoId).map(u -> u.getNome()).orElse("Aluno não encontrado")
+            ))
+            .toList();
+
         return new TurmaResponseDTO(
                 t.getId(),
                 t.getCodigo(),
@@ -74,7 +84,8 @@ public class TurmaService {
                 t.getSemestre(),
                 t.getProfessorId(),
                 nomeProfessor,
-                t.getAlunosIds()
+            t.getAlunosIds(),
+            alunos
         );
     }
 }

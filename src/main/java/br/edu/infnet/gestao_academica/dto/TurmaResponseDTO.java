@@ -9,5 +9,6 @@ public record TurmaResponseDTO(
         String semestre,
         Long professorId,
         String nomeProfessor,
-        List<Long> alunosIds
+        List<Long> alunosIds,
+        List<AlunoResumoDTO> alunos
 ) {}

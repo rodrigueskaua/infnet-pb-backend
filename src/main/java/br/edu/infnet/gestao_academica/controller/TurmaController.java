@@ -36,14 +36,20 @@ public class TurmaController {
         return ResponseEntity.ok(service.listarTodas());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<TurmaResponseDTO> buscarPorId(@PathVariable Long id,
                                                          HttpServletRequest request) {
         AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR", "ALUNO");
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    @GetMapping("/professor/{professorId}")
+    @GetMapping("/professor/minhas")
+    public ResponseEntity<List<TurmaResponseDTO>> listarMinhasTurmasProfessor(HttpServletRequest request) {
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "PROFESSOR");
+        return ResponseEntity.ok(service.listarPorProfessor(logado.id()));
+    }
+
+    @GetMapping("/professor/{professorId:\\d+}")
     public ResponseEntity<List<TurmaResponseDTO>> listarPorProfessor(@PathVariable Long professorId,
                                                                        HttpServletRequest request) {
         UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR");
@@ -53,7 +59,7 @@ public class TurmaController {
         return ResponseEntity.ok(service.listarPorProfessor(professorId));
     }
 
-    @GetMapping("/aluno/{alunoId}")
+    @GetMapping("/aluno/{alunoId:\\d+}")
     public ResponseEntity<List<TurmaResponseDTO>> listarPorAluno(@PathVariable Long alunoId,
                                                                    HttpServletRequest request) {
         UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR", "ALUNO");
@@ -63,7 +69,7 @@ public class TurmaController {
         return ResponseEntity.ok(service.listarPorAluno(alunoId));
     }
 
-    @PostMapping("/{turmaId}/matricular/{alunoId}")
+    @PostMapping("/{turmaId:\\d+}/matricular/{alunoId:\\d+}")
     public ResponseEntity<TurmaResponseDTO> matricularAluno(@PathVariable Long turmaId,
                                                              @PathVariable Long alunoId,
                                                              HttpServletRequest request) {
@@ -71,7 +77,7 @@ public class TurmaController {
         return ResponseEntity.ok(service.matricularAluno(turmaId, alunoId));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public ResponseEntity<Void> deletar(@PathVariable Long id, HttpServletRequest request) {
         AutorizacaoHelper.exigirPerfil(request, "DIRETOR");
         service.deletar(id);
