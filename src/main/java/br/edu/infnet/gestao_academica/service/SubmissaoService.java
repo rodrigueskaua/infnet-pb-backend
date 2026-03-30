@@ -104,11 +104,13 @@ public class SubmissaoService {
             ? usuarioRepository.findById(atividade.getProfessorId()).map(u -> u.getNome()).orElse("Professor")
             : "Professor";
 
-        String detalheNota = nota != null ? " Nota: " + nota + "." : "";
-        String detalheFeedback = (feedback != null && !feedback.isBlank()) ? " Feedback: " + feedback : "";
-
-        String mensagem = "Sua submissão da atividade \"" + tituloAtividade
-            + "\" foi corrigida por " + nomeProfessor + "." + detalheNota + detalheFeedback;
+        String mensagem = "Submissão de " + tituloAtividade + " foi corrigida";
+        if (nota != null) {
+            mensagem += " - Nota: " + nota;
+        }
+        if (feedback != null && !feedback.isBlank()) {
+            mensagem += " - " + feedback;
+        }
 
         notificacaoService.notificarUsuario(submissao.getAlunoId(), mensagem);
         }

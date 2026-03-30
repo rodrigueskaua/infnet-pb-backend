@@ -92,9 +92,7 @@ public class AtividadeService {
                     ? usuarioRepository.findById(atividade.getProfessorId()).map(u -> u.getNome()).orElse("Professor")
                     : "Professor";
 
-            String disciplina = turma.getNomeDisciplina() != null ? turma.getNomeDisciplina() : "sua turma";
-            String mensagem = "Nova atividade publicada em \"" + disciplina + "\": \""
-                    + atividade.getTitulo() + "\" (professor: " + nomeProfessor + ")";
+            String mensagem = "Nova atividade: " + atividade.getTitulo() + " foi publicada";
 
             turma.getAlunosIds().forEach(alunoId -> notificacaoService.notificarUsuario(alunoId, mensagem));
         });
