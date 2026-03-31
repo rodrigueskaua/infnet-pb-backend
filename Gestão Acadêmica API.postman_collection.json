@@ -1,0 +1,1726 @@
+{
+  "info": {
+    "_postman_id": "26276c25-edea-49eb-af71-fdc8b9a580e4",
+    "name": "Gestão Acadêmica API",
+    "description": "## Setup\n1. Importe este arquivo e o `gestao-academica.postman_environment.json`\n2. Selecione o environment **Gestão Acadêmica — Local**\n3. Execute as pastas na ordem: comece pelo **setup inicial**\n\n## Autenticação\nFaça login na pasta do perfil desejado. Token e ID são salvos automaticamente no environment e usados em todas as rotas protegidas via header `X-Token`.\n\n## Códigos de resposta\n| Status | Significado |\n|--------|-------------|\n| 401 | Sem token ou credenciais inválidas |\n| 403 | Perfil sem permissão |\n| 404 | Recurso não encontrado |\n| 409 | Email já cadastrado |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48341712"
+  },
+  "item": [
+    {
+      "name": "setup inicial",
+      "item": [
+        {
+          "name": "registrar aluno",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('alunoId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João Aluno\",\n  \"email\": \"joao@aluno.com\",\n  \"senha\": \"123456\",\n  \"perfil\": \"ALUNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/registrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "registrar"
+              ]
+            },
+            "description": "Cria conta com perfil ALUNO. Salva `alunoId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "registrar professor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('professorId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Prof. Maria\",\n  \"email\": \"maria@professor.com\",\n  \"senha\": \"123456\",\n  \"perfil\": \"PROFESSOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/registrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "registrar"
+              ]
+            },
+            "description": "Cria conta com perfil PROFESSOR. Salva `professorId` no environment."
+          },
+          "response": []
+        }
+      ],
+      "description": "Rotas públicas, sem token. Execute nesta ordem: aluno → professor."
+    },
+    {
+      "name": "fluxo aluno",
+      "item": [
+        {
+          "name": "fazer login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) {",
+                  "  pm.environment.set('token', j.token);",
+                  "  pm.environment.set('alunoId', j.id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carlos@aluno.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "description": "Salva `token` e `alunoId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "ver meu perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "Retorna os dados do usuário logado."
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas turmas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas/aluno/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas",
+                "aluno",
+                "{{alunoId}}"
+              ]
+            },
+            "description": "Turmas em que o aluno está matriculado."
+          },
+          "response": []
+        },
+        {
+          "name": "criar grupo da turma",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"turmaId\": {{turmaId}},\n  \"nome\": \"Grupo Alfa\",\n  \"integrantesIds\": [{{alunoId}}, 2]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/grupos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "grupos"
+              ]
+            },
+            "description": "Aluno cria grupo na turma. Professor precisa finalizar os grupos antes de submissão em grupo."
+          },
+          "response": []
+        },
+        {
+          "name": "listar grupos da turma",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/grupos/turma/{{turmaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "grupos",
+                "turma",
+                "{{turmaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar atividades da turma",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades/turma/{{turmaId}}?status=Pendentes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades",
+                "turma",
+                "{{turmaId}}"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pendentes",
+                  "description": "Valores aceitos: Pendentes, Entregues, Avaliadas"
+                }
+              ]
+            },
+            "description": "Preencha `{{turmaId}}` antes de enviar. Para filtrar, use status=Pendentes, Entregues ou Avaliadas."
+          },
+          "response": []
+        },
+        {
+          "name": "ver atividade",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades/{{atividadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades",
+                "{{atividadeId}}"
+              ]
+            },
+            "description": "Retorna prazo e status da atividade."
+          },
+          "response": []
+        },
+        {
+          "name": "submeter resposta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('submissaoId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "arquivo",
+                  "type": "file",
+                  "description": "Arquivo de resposta",
+                  "value": null
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes?atividadeId={{atividadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes"
+              ],
+              "query": [
+                {
+                  "key": "atividadeId",
+                  "value": "{{atividadeId}}"
+                }
+              ]
+            },
+            "description": "Multipart/form-data. Retorna 400 se o prazo estiver encerrado. Salva `submissaoId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas submissões",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes/aluno/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes",
+                "aluno",
+                "{{alunoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas notificações",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.length > 0) pm.environment.set('notificacaoId', j[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/minhas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "minhas"
+              ]
+            },
+            "description": "Salva o ID da primeira notificação em `notificacaoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "marcar notificação como lida",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/{{notificacaoId}}/lida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "{{notificacaoId}}",
+                "lida"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "topicos (forum)",
+          "item": [
+            {
+              "name": "listar timeline geral",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos/timeline",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos",
+                    "timeline"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "listar timeline da turma",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos/turma/{{turmaId}}/timeline",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos",
+                    "turma",
+                    "{{turmaId}}",
+                    "timeline"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "responder topico",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mensagem\": \"Minha resposta para o topico.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos/{{topicoId}}/respostas",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos",
+                    "{{topicoId}}",
+                    "respostas"
+                  ]
+                },
+                "description": "Aluno responde um topico existente da turma em que esta matriculado."
+              },
+              "response": []
+            }
+          ],
+          "description": "Forum por turma: consultar timeline e responder topicos."
+        },
+        {
+          "name": "fazer logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "logout"
+              ]
+            },
+            "description": "Invalida o token atual."
+          },
+          "response": []
+        }
+      ],
+      "description": "fazer login → ver meu perfil → listar minhas turmas → listar atividades → submeter resposta → listar minhas submissões → listar minhas notificações → fazer logout"
+    },
+    {
+      "name": "fluxo professor",
+      "item": [
+        {
+          "name": "fazer login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) {",
+                  "  pm.environment.set('token', j.token);",
+                  "  pm.environment.set('professorId', j.id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@professor.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "description": "Salva `token` e `professorId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "ver meu perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "criar turma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('turmaId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"POO-2026.1\",\n  \"nomeDisciplina\": \"Programação Orientada a Objetos\",\n  \"semestre\": \"2026.1\",\n  \"professorId\": {{professorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas"
+              ]
+            },
+            "description": "Salva `turmaId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "matricular aluno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas/{{turmaId}}/matricular/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas",
+                "{{turmaId}}",
+                "matricular",
+                "{{alunoId}}"
+              ]
+            },
+            "description": "Adiciona `{{alunoId}}` à turma `{{turmaId}}`."
+          },
+          "response": []
+        },
+        {
+          "name": "listar grupos da turma",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/grupos/turma/{{turmaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "grupos",
+                "turma",
+                "{{turmaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "finalizar grupos da turma",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/grupos/turma/{{turmaId}}/finalizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "grupos",
+                "turma",
+                "{{turmaId}}",
+                "finalizar"
+              ]
+            },
+            "description": "Professor fecha a formação dos grupos para permitir submissões em grupo."
+          },
+          "response": []
+        },
+        {
+          "name": "criar atividade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('atividadeId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Trabalho de POO\",\n  \"descricao\": \"Implemente um sistema com herança e polimorfismo em Java\",\n  \"dataPrazo\": \"2026-12-31T23:59:00\",\n  \"arquivoApoio\": \"enunciado.pdf\",\n  \"turmaId\": {{turmaId}},\n  \"emGrupo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades"
+              ]
+            },
+            "description": "Status definido como PUBLICADA automaticamente. Salva `atividadeId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "criar atividade em grupo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('atividadeId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Projeto Integrador em Grupo\",\n  \"descricao\": \"Entrega em equipe com um envio por grupo\",\n  \"dataPrazo\": \"2026-12-31T23:59:00\",\n  \"arquivoApoio\": \"projeto-grupo.pdf\",\n  \"turmaId\": {{turmaId}},\n  \"emGrupo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades"
+              ]
+            },
+            "description": "Atividade em grupo: exige que alunos estejam em grupo finalizado para submeter."
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas atividades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades/professor/{{professorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades",
+                "professor",
+                "{{professorId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar submissões da atividade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.length > 0) pm.environment.set('submissaoId', j[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes/atividade/{{atividadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes",
+                "atividade",
+                "{{atividadeId}}"
+              ]
+            },
+            "description": "Salva o ID da primeira submissão em `submissaoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "ver submissão",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes/{{submissaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes",
+                "{{submissaoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corrigir submissão",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nota\": 9.5,\n  \"feedback\": \"Ótimo trabalho! Implementação correta de herança e polimorfismo.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes/{{submissaoId}}/corrigir",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes",
+                "{{submissaoId}}",
+                "corrigir"
+              ]
+            },
+            "description": "Lança nota e feedback na submissão."
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas notificações",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.length > 0) pm.environment.set('notificacaoId', j[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/minhas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "minhas"
+              ]
+            },
+            "description": "Salva o ID da primeira notificação em `notificacaoId`."
+          },
+          "response": []
+        },
+        {
+          "name": "marcar notificação como lida",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/{{notificacaoId}}/lida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "{{notificacaoId}}",
+                "lida"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "fazer logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar minhas turmas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas/professor/minhas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas",
+                "professor",
+                "minhas"
+              ]
+            },
+            "description": "Turmas em que o aluno está matriculado."
+          },
+          "response": []
+        },
+        {
+          "name": "topicos (forum)",
+          "item": [
+            {
+              "name": "criar topico",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var j = pm.response.json();",
+                      "if (j.id) pm.environment.set('topicoId', j.id);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"turmaId\": {{turmaId}},\n  \"titulo\": \"Topico de revisao para a prova\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos"
+                  ]
+                },
+                "description": "Professor cria topico para turma que ele leciona."
+              },
+              "response": []
+            },
+            {
+              "name": "listar timeline da turma",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos/turma/{{turmaId}}/timeline",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos",
+                    "turma",
+                    "{{turmaId}}",
+                    "timeline"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "listar timeline geral",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Token",
+                    "value": "{{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/topicos/timeline",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "topicos",
+                    "timeline"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "Forum por turma: professor cria topico e consulta timeline."
+        },
+        {
+          "name": "notificar alunos da turma",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"turmaId\": {{turmaId}},\n  \"mensagem\": \"Aula extra confirmada para sexta-feira às 19h.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/turma",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "turma"
+              ]
+            },
+            "description": "Professor notifica todos os alunos da propria turma."
+          },
+          "response": []
+        }
+      ],
+      "description": "fazer login → ver meu perfil → criar turma → matricular aluno → criar atividade → listar submissões → corrigir submissão → listar minhas notificações → notificar alunos da turma → fazer logout"
+    },
+    {
+      "name": "fluxo diretor",
+      "item": [
+        {
+          "name": "fazer login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) {",
+                  "  pm.environment.set('token', j.token);",
+                  "  pm.environment.set('diretorId', j.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"marcos@diretor.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "description": "Salva `token` e `diretorId` no environment."
+          },
+          "response": []
+        },
+        {
+          "name": "listar usuários",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar professores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios?perfil=PROFESSOR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "perfil",
+                  "value": "PROFESSOR"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar alunos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios?perfil=ALUNO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "perfil",
+                  "value": "ALUNO"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ver usuário",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "{{alunoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar turmas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "exportar relatorio CSV da turma",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/relatorios/turmas/{{turmaId}}/engajamento.csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "relatorios",
+                "turmas",
+                "{{turmaId}}",
+                "engajamento.csv"
+              ]
+            },
+            "description": "Exporta relatorio gerencial da turma em CSV. Rota exclusiva de diretor."
+          },
+          "response": []
+        },
+        {
+          "name": "notificar alunos da turma",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"turmaId\": {{turmaId}},\n  \"mensagem\": \"Diretoria informa: cronograma de provas atualizado no portal.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/turma",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "turma"
+              ]
+            },
+            "description": "Diretor notifica todos os alunos da turma informada."
+          },
+          "response": []
+        },
+        {
+          "name": "criar turma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.environment.set('turmaId', j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"ADS-2026.1\",\n  \"nomeDisciplina\": \"Análise e Desenvolvimento de Sistemas\",\n  \"semestre\": \"2026.1\",\n  \"professorId\": {{professorId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar atividades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/atividades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "atividades"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar submissões da atividade",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/submissoes/atividade/{{atividadeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissoes",
+                "atividade",
+                "{{atividadeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "listar notificações do usuário",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notificacoes/usuario/{{professorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificacoes",
+                "usuario",
+                "{{professorId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remover turma",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/turmas/{{turmaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "turmas",
+                "{{turmaId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remover usuário",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/{{alunoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "{{alunoId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "fazer logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "fazer login → listar usuários → listar turmas → exportar relatorio CSV da turma → notificar alunos da turma → listar atividades → listar submissões → listar notificações → remover → fazer logout"
+    }
+  ]
+}
