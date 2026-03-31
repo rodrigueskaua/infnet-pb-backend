@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 public class Mensagem {
 
     private Long id;
+    private Long topicoId;
+    private Long autorId;
     private String conteudo;
     private LocalDateTime dataEnvio;
     private Topico topico;
@@ -25,6 +27,22 @@ public class Mensagem {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getTopicoId() {
+        return topicoId;
+    }
+
+    public void setTopicoId(Long topicoId) {
+        this.topicoId = topicoId;
+    }
+
+    public Long getAutorId() {
+        return autorId;
+    }
+
+    public void setAutorId(Long autorId) {
+        this.autorId = autorId;
     }
 
     public String getConteudo() {
