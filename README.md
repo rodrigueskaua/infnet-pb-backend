@@ -41,64 +41,40 @@ A API sobe em `http://localhost:8080`. Na primeira execução, a pasta `data/` �
 
 ---
 
-## Diferença entre perfis
-
-| Perfil | O que pode fazer |
-|---|---|
-| ALUNO | Ver as próprias turmas e atividades, enviar submissão, ver as próprias submissões e notificações |
-| PROFESSOR | Criar turmas e atividades, matricular aluno, listar submissões da atividade, corrigir submissões |
-| DIRETOR | Visão administrativa: listar/remover usuários, listar/criar/remover turmas, consultar notificações de qualquer usuário |
-
-Regras importantes:
-
-- Cadastro público aceita apenas ALUNO e PROFESSOR.
-- Endpoints com ID de aluno/professor validam acesso para evitar leitura de dados de outro usuário do mesmo perfil.
-- Toda rota protegida exige `X-Token`.
-
----
-
-## O que adicionamos agora
+## Atualizações recentes
 
 ### Relatórios gerenciais (RF10)
 
-- Diretor pode exportar relatório CSV por turma em `/api/relatorios/turmas/{turmaId}/engajamento.csv`.
-- O arquivo inclui professor da turma, alunos, entregas, entregas no prazo, média e pontuação de proatividade.
-- A rota é protegida para perfil DIRETOR.
+- Exportação CSV por turma para diretor: `/api/relatorios/turmas/{turmaId}/engajamento.csv`.
+- O relatório apresenta professor, alunos, entregas, entregas no prazo, média e pontuação de proatividade.
 
-### Notificações evoluídas
+### Notificações por turma
 
-- Quando um aluno envia submissão, o professor recebe notificação.
-- Quando professor/diretor corrige, o aluno recebe notificação com nota/feedback.
-- Quando uma nova atividade é criada, os alunos da turma recebem notificação.
-- Professor e diretor agora podem disparar mensagem para todos os alunos da turma em `/api/notificacoes/turma`.
+- Professor e diretor podem disparar aviso para todos os alunos da turma via `/api/notificacoes/turma`.
 
 ### Filtro de atividades para aluno
 
-- No endpoint de atividades por turma, o aluno pode filtrar por:
-- `Pendentes`
-- `Entregues`
-- `Avaliadas`
+- No endpoint da turma, aluno pode usar `status=Pendentes`, `status=Entregues` ou `status=Avaliadas`.
+- Exemplo: `/api/atividades/turma/{turmaId}?status=Pendentes`.
 
-Uso: `/api/atividades/turma/{turmaId}?status=Pendentes`
+### Fórum por turma (tópicos)
 
-### Fórum (Tópicos)
+- Professor cria tópico (`POST /api/topicos`).
+- Aluno responde tópico (`POST /api/topicos/{topicoId}/respostas`).
+- Timeline geral e por turma (`GET /api/topicos/timeline` e `GET /api/topicos/turma/{turmaId}/timeline`).
 
-- Professor cria tópico por turma.
-- Aluno responde tópico da turma em que está matriculado.
-- Timeline geral e timeline por turma para acompanhamento das discussões.
+### Grupos e atividade em grupo
 
-### Grupos e atividades em grupo
-
-- Alunos formam grupos por turma (`/api/grupos`).
-- Professor/diretor finalizam os grupos da turma (`/api/grupos/turma/{turmaId}/finalizar`).
-- Atividade pode ser marcada como `emGrupo` no cadastro.
-- Em atividade em grupo, qualquer integrante pode submeter e o envio é replicado para os demais integrantes.
-- Correção do professor continua no mesmo fluxo; ao corrigir uma submissão em grupo, nota/feedback são propagados para todos do grupo.
+- Alunos criam grupos por turma (`POST /api/grupos`).
+- Professor/diretor finalizam grupos da turma (`PATCH /api/grupos/turma/{turmaId}/finalizar`).
+- Atividade agora pode ser marcada com `emGrupo`.
+- Em atividade em grupo, qualquer integrante envia e a submissão é replicada para todos do grupo.
+- Na correção, nota e feedback são propagados para os integrantes, sem mudar fluxo de correção do professor.
 
 ### Upload
 
-- Limite de upload em 20MB.
-- Mensagem amigável para arquivo acima do limite: `Arquivo excede o limite permitido de 20MB.`
+- Limite de arquivo em 20MB.
+- Mensagem amigável para excesso: `Arquivo excede o limite permitido de 20MB.`
 
 ---
 
@@ -222,7 +198,7 @@ E duas turmas pré-criadas com alunos já matriculados.
 | POST | `/api/turmas` | PROFESSOR, DIRETOR | cria turma |
 | POST | `/api/turmas/{id}/matricular/{alunoId}` | PROFESSOR, DIRETOR | matricula aluno |
 | POST | `/api/atividades` | PROFESSOR, DIRETOR | cria atividade |
-| GET | `/api/atividades/turma/{id}?status=Pendentes` | ALUNO | lista atividades com filtro (Pendentes, Entregues, Avaliadas) |
+| GET | `/api/atividades/turma/{id}?status=Pendentes` | ALUNO | lista atividades da turma com filtro |
 | POST | `/api/submissoes` | ALUNO | entrega resposta (multipart) |
 | PATCH | `/api/submissoes/{id}/corrigir` | PROFESSOR, DIRETOR | lança nota e feedback |
 | GET | `/api/notificacoes/minhas` | qualquer | notificações do usuário logado |
@@ -231,8 +207,8 @@ E duas turmas pré-criadas com alunos já matriculados.
 | GET | `/api/relatorios/turmas/{turmaId}/engajamento.csv` | DIRETOR | exporta relatório gerencial em CSV |
 | POST | `/api/topicos` | PROFESSOR | cria tópico de fórum na turma |
 | POST | `/api/topicos/{topicoId}/respostas` | ALUNO | responde tópico da turma |
-| GET | `/api/topicos/timeline` | qualquer autenticado | timeline geral do fórum |
-| GET | `/api/topicos/turma/{turmaId}/timeline` | qualquer autenticado | timeline por turma |
+| GET | `/api/topicos/timeline` | autenticado | timeline geral do fórum |
+| GET | `/api/topicos/turma/{turmaId}/timeline` | autenticado | timeline por turma |
 | POST | `/api/grupos` | ALUNO | cria grupo na turma |
 | GET | `/api/grupos/turma/{turmaId}` | ALUNO, PROFESSOR, DIRETOR | lista grupos da turma |
 | PATCH | `/api/grupos/turma/{turmaId}/finalizar` | PROFESSOR, DIRETOR | finaliza formação dos grupos |
@@ -248,7 +224,7 @@ data/
 ├── atividades.csv     ← atividades criadas pelos professores
 ├── submissoes.csv     ← entregas com nota e feedback
 ├── notificacoes.csv   ← notificações geradas automaticamente
-├── topicos.csv         ← tópicos do fórum por turma
+├── topicos.csv         ← tópicos de discussão por turma
 ├── mensagens.csv       ← respostas dos tópicos
 ├── grupos.csv          ← grupos de alunos por turma
 └── uploads/           ← arquivos enviados pelos alunos
