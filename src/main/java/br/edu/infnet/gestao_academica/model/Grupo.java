@@ -6,7 +6,11 @@ import java.util.List;
 public class Grupo {
 
     private Long id;
+    private Long turmaId;
     private String nome;
+    private Long liderId;
+    private List<Long> alunosIds = new ArrayList<>();
+    private Boolean finalizado = false;
     private List<Aluno> alunos = new ArrayList<>();
     private Aluno lider;
 
@@ -32,6 +36,38 @@ public class Grupo {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public Long getTurmaId() {
+        return turmaId;
+    }
+
+    public void setTurmaId(Long turmaId) {
+        this.turmaId = turmaId;
+    }
+
+    public Long getLiderId() {
+        return liderId;
+    }
+
+    public void setLiderId(Long liderId) {
+        this.liderId = liderId;
+    }
+
+    public List<Long> getAlunosIds() {
+        return alunosIds;
+    }
+
+    public void setAlunosIds(List<Long> alunosIds) {
+        this.alunosIds = alunosIds;
+    }
+
+    public Boolean getFinalizado() {
+        return finalizado;
+    }
+
+    public void setFinalizado(Boolean finalizado) {
+        this.finalizado = finalizado;
     }
 
     public List<Aluno> getAlunos() {

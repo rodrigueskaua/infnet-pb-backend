@@ -22,6 +22,9 @@ public class CsvAtividadeRecord {
     @CsvBindByName(column = "ARQUIVO_APOIO")
     private String arquivoApoio;
 
+    @CsvBindByName(column = "EM_GRUPO")
+    private Boolean emGrupo;
+
     @CsvBindByName(column = "TURMA_ID")
     private Long turmaId;
 
@@ -45,6 +48,9 @@ public class CsvAtividadeRecord {
 
     public String getArquivoApoio() { return arquivoApoio; }
     public void setArquivoApoio(String arquivoApoio) { this.arquivoApoio = arquivoApoio; }
+
+    public Boolean getEmGrupo() { return emGrupo; }
+    public void setEmGrupo(Boolean emGrupo) { this.emGrupo = emGrupo; }
 
     public Long getTurmaId() { return turmaId; }
     public void setTurmaId(Long turmaId) { this.turmaId = turmaId; }

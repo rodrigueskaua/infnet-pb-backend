@@ -12,6 +12,7 @@ public class Atividade {
     private LocalDateTime dataPrazo;
     private StatusAtividade status;
     private String arquivoApoio;
+    private Boolean emGrupo = false;
     private Long turmaId;
     private Long professorId;
     private Turma turma;
@@ -76,6 +77,14 @@ public class Atividade {
 
     public void setArquivoApoio(String arquivoApoio) {
         this.arquivoApoio = arquivoApoio;
+    }
+
+    public Boolean getEmGrupo() {
+        return emGrupo;
+    }
+
+    public void setEmGrupo(Boolean emGrupo) {
+        this.emGrupo = emGrupo;
     }
 
     public Long getTurmaId() {

@@ -11,6 +11,7 @@ public record AtividadeResponseDTO(
         String nomeDisciplina,
         Long professorId,
         String nomeProfessor,
+        Boolean emGrupo,
         Integer quantosEntregaram,
         Integer quantosPendentes
 ) {}

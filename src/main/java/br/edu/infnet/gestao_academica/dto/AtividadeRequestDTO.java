@@ -5,5 +5,6 @@ public record AtividadeRequestDTO(
         String descricao,
         String dataPrazo,
         String arquivoApoio,
-        Long turmaId
+        Long turmaId,
+        Boolean emGrupo
 ) {}

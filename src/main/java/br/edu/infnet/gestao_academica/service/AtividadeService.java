@@ -3,6 +3,7 @@ package br.edu.infnet.gestao_academica.service;
 import br.edu.infnet.gestao_academica.dto.AtividadeRequestDTO;
 import br.edu.infnet.gestao_academica.dto.AtividadeResponseDTO;
 import br.edu.infnet.gestao_academica.model.Atividade;
+import br.edu.infnet.gestao_academica.model.Submissao;
 import br.edu.infnet.gestao_academica.model.StatusAtividade;
 import br.edu.infnet.gestao_academica.repository.AtividadeCsvRepository;
 import br.edu.infnet.gestao_academica.repository.SubmissaoCsvRepository;
@@ -11,7 +12,6 @@ import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +48,7 @@ public class AtividadeService {
         atividade.setDataPrazo(dto.dataPrazo() != null ? LocalDateTime.parse(dto.dataPrazo()) : null);
         atividade.setStatus(StatusAtividade.PUBLICADA);
         atividade.setArquivoApoio(dto.arquivoApoio());
+        atividade.setEmGrupo(dto.emGrupo() != null && dto.emGrupo());
         atividade.setTurmaId(dto.turmaId());
         atividade.setProfessorId(professorId);
 
@@ -78,13 +79,13 @@ public class AtividadeService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        Map<Long, List<br.edu.infnet.gestao_academica.model.Submissao>> submissoesPorAtividade = submissaoRepository.findByAlunoId(alunoId).stream()
+        Map<Long, List<Submissao>> submissoesPorAtividade = submissaoRepository.findByAlunoId(alunoId).stream()
                 .filter(s -> s.getAtividadeId() != null && atividadesIds.contains(s.getAtividadeId()))
-                .collect(Collectors.groupingBy(br.edu.infnet.gestao_academica.model.Submissao::getAtividadeId));
+            .collect(Collectors.groupingBy(Submissao::getAtividadeId));
 
-        List<Atividade> filtradas = new ArrayList<>();
+        List<Atividade> filtradas = new java.util.ArrayList<>();
         for (Atividade atividade : atividadesTurma) {
-            List<br.edu.infnet.gestao_academica.model.Submissao> submissoesAluno = submissoesPorAtividade
+            List<Submissao> submissoesAluno = submissoesPorAtividade
                     .getOrDefault(atividade.getId(), List.of());
             boolean possuiSubmissao = !submissoesAluno.isEmpty();
             boolean possuiCorrecao = submissoesAluno.stream()
@@ -190,6 +191,7 @@ public class AtividadeService {
                 nomeDisciplina,
                 a.getProfessorId(),
                 nomeProfessor,
+                a.getEmGrupo() != null && a.getEmGrupo(),
                 quantosEntregaram,
                 quantosPendentes
         );

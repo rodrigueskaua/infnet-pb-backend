@@ -35,7 +35,7 @@ public class AtividadeCsvRepository {
         }
         if (!Files.exists(csvFilePath)) {
             try (var writer = Files.newBufferedWriter(csvFilePath)) {
-                writer.write("ID,TITULO,DESCRICAO,DATA_PRAZO,STATUS,ARQUIVO_APOIO,TURMA_ID,PROFESSOR_ID");
+                writer.write("ID,TITULO,DESCRICAO,DATA_PRAZO,STATUS,ARQUIVO_APOIO,EM_GRUPO,TURMA_ID,PROFESSOR_ID");
                 writer.newLine();
             }
         }
@@ -108,6 +108,7 @@ public class AtividadeCsvRepository {
         a.setDataPrazo(record.getDataPrazo() != null ? LocalDateTime.parse(record.getDataPrazo()) : null);
         a.setStatus(record.getStatus() != null ? StatusAtividade.valueOf(record.getStatus()) : StatusAtividade.PUBLICADA);
         a.setArquivoApoio(record.getArquivoApoio());
+        a.setEmGrupo(record.getEmGrupo() != null && record.getEmGrupo());
         a.setTurmaId(record.getTurmaId());
         a.setProfessorId(record.getProfessorId());
         return a;
@@ -121,6 +122,7 @@ public class AtividadeCsvRepository {
         record.setDataPrazo(a.getDataPrazo() != null ? a.getDataPrazo().toString() : null);
         record.setStatus(a.getStatus() != null ? a.getStatus().name() : null);
         record.setArquivoApoio(a.getArquivoApoio());
+        record.setEmGrupo(a.getEmGrupo() != null && a.getEmGrupo());
         record.setTurmaId(a.getTurmaId());
         record.setProfessorId(a.getProfessorId());
         return record;
