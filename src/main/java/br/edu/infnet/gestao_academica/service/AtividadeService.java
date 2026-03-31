@@ -11,9 +11,14 @@ import br.edu.infnet.gestao_academica.repository.UsuarioCsvRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AtividadeService {
@@ -60,6 +65,45 @@ public class AtividadeService {
         return repository.findByTurmaId(turmaId).stream().map(this::toResponse).toList();
     }
 
+    public List<AtividadeResponseDTO> listarPorTurmaComFiltroAluno(Long turmaId, Long alunoId, String status) {
+        String filtro = normalizarStatusFiltro(status);
+        List<Atividade> atividadesTurma = repository.findByTurmaId(turmaId);
+
+        if (filtro == null) {
+            return atividadesTurma.stream().map(this::toResponse).toList();
+        }
+
+        Set<Long> atividadesIds = atividadesTurma.stream()
+                .map(Atividade::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, List<br.edu.infnet.gestao_academica.model.Submissao>> submissoesPorAtividade = submissaoRepository.findByAlunoId(alunoId).stream()
+                .filter(s -> s.getAtividadeId() != null && atividadesIds.contains(s.getAtividadeId()))
+                .collect(Collectors.groupingBy(br.edu.infnet.gestao_academica.model.Submissao::getAtividadeId));
+
+        List<Atividade> filtradas = new ArrayList<>();
+        for (Atividade atividade : atividadesTurma) {
+            List<br.edu.infnet.gestao_academica.model.Submissao> submissoesAluno = submissoesPorAtividade
+                    .getOrDefault(atividade.getId(), List.of());
+            boolean possuiSubmissao = !submissoesAluno.isEmpty();
+            boolean possuiCorrecao = submissoesAluno.stream()
+                    .anyMatch(s -> s.getNota() != null || (s.getFeedback() != null && !s.getFeedback().isBlank()));
+
+            if ("PENDENTES".equals(filtro) && !possuiSubmissao) {
+                filtradas.add(atividade);
+            }
+            if ("ENTREGUES".equals(filtro) && possuiSubmissao && !possuiCorrecao) {
+                filtradas.add(atividade);
+            }
+            if ("AVALIADAS".equals(filtro) && possuiCorrecao) {
+                filtradas.add(atividade);
+            }
+        }
+
+        return filtradas.stream().map(this::toResponse).toList();
+    }
+
     public List<AtividadeResponseDTO> listarTodas() {
         return repository.findAll().stream().map(this::toResponse).toList();
     }
@@ -76,6 +120,20 @@ public class AtividadeService {
     public boolean isPrazoValido(Long atividadeId) {
         Atividade atividade = buscarEntidadePorId(atividadeId);
         return atividade.getDataPrazo() == null || LocalDateTime.now().isBefore(atividade.getDataPrazo());
+    }
+
+    private String normalizarStatusFiltro(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        String valor = status.trim().toUpperCase(Locale.ROOT);
+        return switch (valor) {
+            case "PENDENTES", "PENDENTE" -> "PENDENTES";
+            case "ENTREGUES", "ENTREGUE" -> "ENTREGUES";
+            case "AVALIADAS", "AVALIADA" -> "AVALIADAS";
+            default -> throw new IllegalArgumentException("Status inválido. Use: Pendentes, Entregues ou Avaliadas.");
+        };
     }
 
     private void notificarAlunosDaTurma(Atividade atividade) {

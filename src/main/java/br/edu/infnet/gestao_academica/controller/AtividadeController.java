@@ -44,8 +44,14 @@ public class AtividadeController {
 
     @GetMapping("/turma/{turmaId}")
     public ResponseEntity<List<AtividadeResponseDTO>> listarPorTurma(@PathVariable Long turmaId,
+                                                                      @RequestParam(required = false) String status,
                                                                       HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "ALUNO", "DIRETOR");
+
+        if ("ALUNO".equalsIgnoreCase(logado.perfil())) {
+            return ResponseEntity.ok(service.listarPorTurmaComFiltroAluno(turmaId, logado.id(), status));
+        }
+
         return ResponseEntity.ok(service.listarPorTurma(turmaId));
     }
 
