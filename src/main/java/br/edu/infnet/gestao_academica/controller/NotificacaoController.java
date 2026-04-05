@@ -2,6 +2,7 @@ package br.edu.infnet.gestao_academica.controller;
 
 import br.edu.infnet.gestao_academica.auth.AutorizacaoHelper;
 import br.edu.infnet.gestao_academica.dto.NotificacaoTurmaRequestDTO;
+import br.edu.infnet.gestao_academica.dto.NotificacaoTurmaResponseDTO;
 import br.edu.infnet.gestao_academica.dto.NotificacaoResponseDTO;
 import br.edu.infnet.gestao_academica.dto.UsuarioResponseDTO;
 import br.edu.infnet.gestao_academica.service.NotificacaoService;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -49,16 +49,13 @@ public class NotificacaoController {
     }
 
     @PostMapping("/turma")
-    public ResponseEntity<Map<String, Object>> notificarTurma(@RequestBody NotificacaoTurmaRequestDTO dto,
-                                                               HttpServletRequest request) {
+    public ResponseEntity<NotificacaoTurmaResponseDTO> notificarTurma(@RequestBody NotificacaoTurmaRequestDTO dto,
+                                                                       HttpServletRequest request) {
         UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
 
         int totalEnviado = service.notificarTurma(dto.turmaId(), dto.mensagem(), logado.id(), logado.perfil());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "turmaId", dto.turmaId(),
-                "mensagem", dto.mensagem(),
-                "totalAlunosNotificados", totalEnviado
-        ));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new NotificacaoTurmaResponseDTO(dto.turmaId(), dto.mensagem(), totalEnviado));
     }
 }

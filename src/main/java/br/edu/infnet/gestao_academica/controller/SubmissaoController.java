@@ -57,13 +57,16 @@ public class SubmissaoController {
         return ResponseEntity.ok(submissaoService.listarPorAtividade(atividadeId));
     }
 
+    @GetMapping("/minhas")
+    public ResponseEntity<List<SubmissaoResponseDTO>> listarMinhas(HttpServletRequest request) {
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "ALUNO");
+        return ResponseEntity.ok(submissaoService.listarPorAluno(logado.id()));
+    }
+
     @GetMapping("/aluno/{alunoId}")
     public ResponseEntity<List<SubmissaoResponseDTO>> listarPorAluno(@PathVariable Long alunoId,
                                                                       HttpServletRequest request) {
-        UsuarioResponseDTO logado = AutorizacaoHelper.getUsuarioLogado(request);
-        if ("ALUNO".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(alunoId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
-        }
+        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
         return ResponseEntity.ok(submissaoService.listarPorAluno(alunoId));
     }
 

@@ -55,10 +55,16 @@ public class AtividadeController {
         return ResponseEntity.ok(service.listarPorTurma(turmaId));
     }
 
+    @GetMapping("/minhas")
+    public ResponseEntity<List<AtividadeResponseDTO>> listarMinhas(HttpServletRequest request) {
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "PROFESSOR");
+        return ResponseEntity.ok(service.listarPorProfessor(logado.id()));
+    }
+
     @GetMapping("/professor/{professorId}")
     public ResponseEntity<List<AtividadeResponseDTO>> listarPorProfessor(@PathVariable Long professorId,
                                                                           HttpServletRequest request) {
-        AutorizacaoHelper.exigirPerfil(request, "PROFESSOR", "DIRETOR");
+        AutorizacaoHelper.exigirPerfil(request, "DIRETOR");
         return ResponseEntity.ok(service.listarPorProfessor(professorId));
     }
 }

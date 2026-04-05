@@ -59,13 +59,16 @@ public class TurmaController {
         return ResponseEntity.ok(service.listarPorProfessor(professorId));
     }
 
+    @GetMapping("/aluno/minhas")
+    public ResponseEntity<List<TurmaResponseDTO>> listarMinhasTurmasAluno(HttpServletRequest request) {
+        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "ALUNO");
+        return ResponseEntity.ok(service.listarPorAluno(logado.id()));
+    }
+
     @GetMapping("/aluno/{alunoId:\\d+}")
     public ResponseEntity<List<TurmaResponseDTO>> listarPorAluno(@PathVariable Long alunoId,
                                                                    HttpServletRequest request) {
-        UsuarioResponseDTO logado = AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR", "ALUNO");
-        if ("ALUNO".equalsIgnoreCase(logado.perfil()) && !logado.id().equals(alunoId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
-        }
+        AutorizacaoHelper.exigirPerfil(request, "DIRETOR", "PROFESSOR");
         return ResponseEntity.ok(service.listarPorAluno(alunoId));
     }
 
